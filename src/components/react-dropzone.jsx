@@ -29,8 +29,16 @@ function MyDropzone() {
     
     useEffect(() => {
         return () => {
-            files.forEach(file => URL.revokeObjectURL(file.preview));
-            rejectedFiles.forEach(file => URL.revokeObjectURL(file.preview));
+            files.forEach(file => {
+                if (file.preview) {
+                    URL.revokeObjectURL(file.preview);
+                }
+            });
+            rejectedFiles.forEach(file => {
+                if (file.preview) {
+                    URL.revokeObjectURL(file.preview);
+                }
+            });
         };
     }, [files, rejectedFiles]);
 
@@ -51,19 +59,60 @@ function MyDropzone() {
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop, maxSize: 1024 * 1024 * 20})
 
     const removeFile = (name) => {
-        setFiles(files.filter(file => file.name !== name))
+        setFiles(prevFiles => {
+            // First find the file
+            const fileToRemove = prevFiles.find(file => file.name === name);
+            
+            // Immediately revoke the URL
+            if (fileToRemove?.preview) {
+                URL.revokeObjectURL(fileToRemove.preview);
+                // Clear the preview property to prevent any rendering attempts
+                fileToRemove.preview = undefined;
+            }
+            
+            // Then filter out the file
+            return prevFiles.filter(file => file.name !== name);
+        });
     }
 
     const removeRejectedFile = (name) => {
-        setRejectedFiles(rejectedFiles.filter(file => file.name !== name))
+        setRejectedFiles(prevFiles => {
+            // First find the file
+            const fileToRemove = prevFiles.find(file => file.name === name);
+            
+            // Immediately revoke the URL
+            if (fileToRemove?.preview) {
+                URL.revokeObjectURL(fileToRemove.preview);
+                // Clear the preview property to prevent any rendering attempts
+                fileToRemove.preview = undefined;
+            }
+            
+            // Then filter out the file
+            return prevFiles.filter(file => file.name !== name);
+        });
     }
 
     const removeAllFiles = () => {
+        files.forEach(file => {
+            if (file.preview) {
+                URL.revokeObjectURL(file.preview);
+            }
+        });
+        rejectedFiles.forEach(file => {
+            if (file.preview) {
+                URL.revokeObjectURL(file.preview);
+            }
+        });
         setFiles([]);
         setRejectedFiles([]);
     };
 
     const renderPreview = (file) => {
+        // Add a guard clause to prevent rendering if preview is undefined
+        if (!file.preview) {
+            return renderFileIcon(file);
+        }
+
         if (file.type?.startsWith('image/')) {
             return (
                 <img 
@@ -75,11 +124,20 @@ function MyDropzone() {
                         objectFit: 'cover', 
                         borderRadius: '8px'
                     }}
+                    onError={() => {
+                        // If image fails to load, fall back to icon
+                        file.preview = undefined;
+                        return renderFileIcon(file);
+                    }}
                 />
             );
         }
         
-        // Find matching file type icon
+        return renderFileIcon(file);
+    };
+
+    // Helper function to render file icon
+    const renderFileIcon = (file) => {
         const iconKey = Object.keys(FILE_ICONS).find(key => file.type?.startsWith(key)) || 'default';
         const icon = FILE_ICONS[iconKey];
 
