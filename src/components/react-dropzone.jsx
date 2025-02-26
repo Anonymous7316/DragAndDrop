@@ -99,14 +99,43 @@ function MyDropzone() {
         );
     };
 
+    const dropzoneStyle = {
+        padding: '50px',
+        borderWidth: '2px',
+        borderStyle: 'dashed',
+        borderColor: '#cccccc',
+        borderRadius: '8px',
+        backgroundColor: '#fafafa',
+        transition: 'all 0.3s ease',
+        cursor: 'pointer',
+        textAlign: 'center'
+    };
+
+    const activeDropzoneStyle = {
+        ...dropzoneStyle,
+        borderColor: '#2196f3',
+        backgroundColor: '#e3f2fd'
+    };
+
+    const dropzoneTextStyle = {
+        margin: 0,
+        fontSize: '1.1rem',
+        color: '#666666'
+    };
+
     return (
         <form>
-            <div {...getRootProps()} style={{padding: '50px', border: '1px dashed #ccc', borderRadius: '5px'}}>
+            <div 
+                {...getRootProps()} 
+                style={isDragActive ? activeDropzoneStyle : dropzoneStyle}
+            >
                 <input {...getInputProps()} />
                 {
                     isDragActive ?
-                    <p>Drop the files here ...</p> :
-                    <p>Drag and drop some files here, or click to select files</p>
+                    <p style={{...dropzoneTextStyle, color: '#2196f3'}}>Drop the files here ...</p> :
+                    <p style={dropzoneTextStyle}>
+                        Drag and drop some files here, or click to select files
+                    </p>
                 }
             </div>
             {files.length > 0 && (
