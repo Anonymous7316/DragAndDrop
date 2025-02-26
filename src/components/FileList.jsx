@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { FileCard, DeleteButton } from './FileCard';
+import { v4 as uuidv4 } from 'uuid';
 
 const FileList = ({ 
     files, 
@@ -17,8 +18,8 @@ const FileList = ({
         gap: '1rem',
         justifyItems: 'center'
     }}>
-        {files.map((file, index) => (
-            <li key={index} style={{ 
+        {files.map((file) => (
+            <li key={uuidv4()} style={{ 
                 marginBottom: '1rem', 
                 position: 'relative', 
                 width: '100%',
