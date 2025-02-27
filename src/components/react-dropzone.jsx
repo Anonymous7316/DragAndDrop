@@ -1,7 +1,8 @@
-import {useCallback, useState, useEffect} from 'react'
+import {useCallback} from 'react'
 import {useDropzone} from 'react-dropzone'
 import FileList from './FileList'
 import { ActionButton } from './FileCard'
+import PropTypes from 'prop-types'
 
 const formatFileSize = (bytes) => {
     const mb = bytes / (1024 * 1024);
@@ -23,25 +24,7 @@ const FILE_ICONS = {
     'default': '📁'
 };
 
-function MyDropzone() {
-    const [files, setFiles] = useState([]);
-    const [rejectedFiles, setRejectedFiles] = useState([]);
-    
-    useEffect(() => {
-        return () => {
-            files.forEach(file => {
-                if (file.preview) {
-                    URL.revokeObjectURL(file.preview);
-                }
-            });
-            rejectedFiles.forEach(file => {
-                if (file.preview) {
-                    URL.revokeObjectURL(file.preview);
-                }
-            });
-        };
-    }, [files, rejectedFiles]);
-
+function MyDropzone({files, setFiles, rejectedFiles, setRejectedFiles}) {
     const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
         if(acceptedFiles?.length) {
             setFiles(previousFiles => [...previousFiles, ...acceptedFiles.map(file => Object.assign(file, {
@@ -182,7 +165,7 @@ function MyDropzone() {
     };
 
     return (
-        <form>
+        <>
             <div 
                 {...getRootProps()} 
                 style={isDragActive ? activeDropzoneStyle : dropzoneStyle}
@@ -232,8 +215,24 @@ function MyDropzone() {
                     />
                 </>
             )}
-        </form>
+        </>
     )
 }
+
+MyDropzone.propTypes = {
+    files: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        size: PropTypes.number.isRequired,
+        preview: PropTypes.string
+    })).isRequired,
+    setFiles: PropTypes.func.isRequired,
+    rejectedFiles: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        size: PropTypes.number.isRequired,
+        preview: PropTypes.string,
+        errors: PropTypes.array
+    })).isRequired,
+    setRejectedFiles: PropTypes.func.isRequired
+};
 
 export default MyDropzone
